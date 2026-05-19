@@ -254,7 +254,7 @@ Authorization: Bearer YOUR_TOKEN
 ## Get Current User
 
 ```http
-GET /api/me
+GET /me
 ```
 
 Returns the authenticated user from the database.
@@ -266,7 +266,7 @@ Returns the authenticated user from the database.
 ## Get All Published Content
 
 ```http
-GET /api/content
+GET /content
 ```
 
 ### Query Parameters
@@ -285,7 +285,7 @@ GET /api/content
 ## Get Content By ID
 
 ```http
-GET /api/content/:id
+GET /content/:id
 ```
 
 Returns detailed information for a specific content item.
@@ -301,7 +301,7 @@ Protected admin routes.
 ## Create Content
 
 ```http
-POST /api/admin/content
+POST /admin/content
 ```
 
 Supports:
@@ -316,7 +316,7 @@ Supports:
 ## Delete Content
 
 ```http
-DELETE /api/admin/content/:id
+DELETE /admin/content/:id
 ```
 
 ---
@@ -324,7 +324,7 @@ DELETE /api/admin/content/:id
 ## Get Users
 
 ```http
-GET /api/admin/users
+GET /admin/users
 ```
 
 ---
@@ -334,7 +334,7 @@ GET /api/admin/users
 ## Create Booking
 
 ```http
-POST /api/bookings
+POST /bookings
 ```
 
 ---
@@ -342,7 +342,7 @@ POST /api/bookings
 ## Get Bookings
 
 ```http
-GET /api/bookings
+GET /bookings
 ```
 
 ---
@@ -350,7 +350,7 @@ GET /api/bookings
 ## Update Booking Status
 
 ```http
-PATCH /api/bookings/:id/status
+PATCH /bookings/:id/status
 ```
 
 ---
