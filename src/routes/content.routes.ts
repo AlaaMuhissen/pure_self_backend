@@ -1,11 +1,12 @@
 // src/routes/content.routes.ts
-import { Router } from "express";
+import { Router ,Response } from "express";
 import { z } from "zod";
 import { pool, supabase } from "../db/supabase";
 import { PoolClient } from "pg";
 import multer from "multer";
 import { canAccessContent } from "../controllers/content-access.controller";
 import { AuthedRequest, clerkAuth } from "../middleware/clerkAuth.middleware";
+import { optionalClerkAuth } from "../middleware/optional auth.middleware";
 
 const router = Router();
 
@@ -291,97 +292,103 @@ router.get("/", async (req, res) => {
 
 /**
  * GET /content/:id -> item + details
- * Protected full content route
+ *
+ * Access matrix:
+ *  - Guest (no Clerk session)       → public preview only, access: false
+ *  - Authed but not in users table  → public preview only, access: false
+ *  - Authed, no content access      → public preview only, access: false
+ *  - Authed, has access             → full item + type-specific details
  */
-router.get("/:id", clerkAuth, async (req: AuthedRequest, res) => {
+router.get("/:id", optionalClerkAuth, async (req: AuthedRequest, res : Response) => {
   try {
     const contentId = req.params.id;
-    const clerkUserId = req.auth?.clerkUserId;
 
-    if (!clerkUserId) {
-      return res.status(401).json({
-        success: false,
-        error: "Unauthorized",
-      });
-    }
-
+    // ── 1. Fetch the content item (always, for any visitor) ──────────────────
     const itemRes = await pool.query<ContentRow>(
-      `
-      SELECT *
-      FROM public.content_items
-      WHERE id = $1
-      `,
+      `SELECT * FROM public.content_items WHERE id = $1`,
       [contentId]
     );
 
     if (itemRes.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "Not found",
-      });
+      return res.status(404).json({ success: false, error: "Not found" });
     }
 
     const item = itemRes.rows[0];
 
+    // Public preview payload — returned whenever access is denied
+    const preview = {
+      id: item.id,
+      type: item.type,
+      title: item.title,
+      description: item.description,
+      image_url: item.image_url,
+      price: item.price,
+      currency: item.currency,
+      is_free: item.is_free,
+    };
+
+    // ── 2. Guest: no Clerk session at all ────────────────────────────────────
+    const clerkUserId = req.auth?.clerkUserId;
+
+    if (!clerkUserId) {
+      return res.status(200).json({
+        success: true,
+        access: false,
+        reason: "unauthenticated",
+        item: preview,
+      });
+    }
+
+    // ── 3. Authed: resolve internal user record ──────────────────────────────
     const userRes = await pool.query(
-      `
-      SELECT id, subscription_active
-      FROM public.users
-      WHERE clerk_user_id = $1
-      LIMIT 1
-      `,
+      `SELECT id, subscription_active
+       FROM public.users
+       WHERE clerk_user_id = $1
+       LIMIT 1`,
       [clerkUserId]
     );
 
     const appUser = userRes.rows[0];
 
+    // Signed in with Clerk but hasn't completed signup in our DB yet
     if (!appUser) {
-      return res.status(404).json({
-        success: false,
-        error: "User not found",
+      return res.status(200).json({
+        success: true,
+        access: false,
+        reason: "user_not_registered",
+        item: preview,
       });
     }
 
+    // ── 4. Check content access ───────────────────────────────────────────────
     const hasAccess = await canAccessContent(appUser.id, contentId);
 
     if (!hasAccess) {
-      return res.json({
-        success: false,
-        error: "لا يوجد لديكِ صلاحية للوصول إلى هذا المحتوى",
+      return res.status(200).json({
+        success: true,
         access: false,
-        item: {
-          id: item.id,
-          type: item.type,
-          title: item.title,
-          description: item.description,
-          image_url: item.image_url,
-          price: item.price,
-          currency: item.currency,
-          is_free: item.is_free,
-        },
+        reason: "no_access",
+        item: preview,
       });
     }
 
+    // ── 5. Fetch type-specific details and return full content ────────────────
     const { table } = detailsTable(item.type);
 
     const detailsRes = await pool.query(
-      `
-      SELECT *
-      FROM ${table}
-      WHERE content_id = $1
-      `,
+      `SELECT * FROM ${table} WHERE content_id = $1`,
       [contentId]
     );
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       access: true,
       item,
       details: detailsRes.rows[0] ?? null,
     });
+
   } catch (e: any) {
     console.error("GET CONTENT DETAILS ERROR:", e);
-
     return res.status(500).json({
       success: false,
       error: "Failed to load content",
@@ -389,6 +396,7 @@ router.get("/:id", clerkAuth, async (req: AuthedRequest, res) => {
     });
   }
 });
+
 /**
  * POST /admin/content
  * multipart/form-data:
