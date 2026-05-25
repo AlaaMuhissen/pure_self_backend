@@ -9,6 +9,7 @@ export type CreateUserInput = {
   email?: string;
   name?: string;
   role?: "user" | "specialist" | "admin";
+  username?: string;
   profile_image?: string | null;
   palette_id?: string | null;
   subscription_active?: boolean;
@@ -42,6 +43,7 @@ export async function createUser(payload: CreateUserInput) {
     email: payload.email ?? null,
     name: payload.name ?? null,
     role: payload.role ?? "user",
+    username: payload.username ?? null,
     profile_image: payload.profile_image ?? null,
     palette_id: payload.palette_id ?? null,
     subscription_active: payload.subscription_active ?? false,
@@ -62,6 +64,7 @@ export async function updateUser(id: string, payload: Partial<CreateUserInput>) 
     ...(payload.email !== undefined && { email: payload.email }),
     ...(payload.name !== undefined && { name: payload.name }),
     ...(payload.role !== undefined && { role: payload.role }),
+    ...(payload.username !== undefined && { username: payload.username }),
     ...(payload.profile_image !== undefined && { profile_image: payload.profile_image }),
     ...(payload.palette_id !== undefined && { palette_id: payload.palette_id }),
     ...(payload.subscription_active !== undefined && {
