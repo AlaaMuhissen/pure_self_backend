@@ -89,7 +89,7 @@ export async function sendBookingConfirmation({
   startsAt,
   endsAt,
   meetUrl,
-  spesialistName 
+  specialistName, 
 }: {
   eventId:      string;
   patientEmail: string | null;
@@ -97,10 +97,10 @@ export async function sendBookingConfirmation({
   startsAt:     string;
   endsAt:       string;
   meetUrl:      string | null;
-  spesialistName?: string;
+  specialistName?: string;
 }) {
-  const start = new Date(startsAt).toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' });
-  const end   = new Date(endsAt).toLocaleString('ar-SA',   { timeZone: 'Asia/Riyadh' });
+//   const start = new Date(startsAt).toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh' });
+//   const end   = new Date(endsAt).toLocaleString('ar-SA',   { timeZone: 'Asia/Riyadh' });
   const { datePart: startDate, timePart: startTime } = formatArabicDateTime(startsAt);
   const { timePart: endTime } = formatArabicDateTime(endsAt);
   const meetLine = meetUrl ? `\nرابط الجلسة: ${meetUrl}` : '';
@@ -109,8 +109,8 @@ export async function sendBookingConfirmation({
   if (patientEmail) {
     const ics = generateICS({
       eventId,
-      summary:        `جلسة مع المختصة ${spesialistName ? ` ${spesialistName}` : ''}`,
-      description:    `جلسة استشارة مع المختصة ${spesialistName ? ` ${spesialistName}` : ''}`,
+      summary:        `جلسة مع المختصة ${specialistName ? ` ${specialistName}` : ''}`,
+      description:    `جلسة استشارة مع المختصة ${specialistName ? ` ${specialistName}` : ''}`,
       startsAt,
       endsAt,
       organizerEmail: process.env.MAIL_USER!,
@@ -121,10 +121,10 @@ export async function sendBookingConfirmation({
    await transporter.sendMail({
         from:    `"PureSelf" <${process.env.MAIL_USER}>`,
         to:      patientEmail,
-        subject: ` ${spesialistName ? ` ${spesialistName}` : ''} تأكيد جلستك مع المختصة`,
+        subject: ` ${specialistName ? ` ${specialistName}` : ''} تأكيد جلستك مع المختصة`,
         html: `
             <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; font-size: 15px; color: #2d1a0e; background: #fdf9f4; padding: 32px; border-radius: 12px; max-width: 480px; margin: auto;">
-            <h2 style="color: #4a2c1a; margin-bottom: 8px;">${spesialistName ? ` ${spesialistName}` : ''} تأكيد جلستك مع المختصة</h2>
+            <h2 style="color: #4a2c1a; margin-bottom: 8px;">${specialistName ? ` ${specialistName}` : ''} تأكيد جلستك مع المختصة</h2>
             <hr style="border: none; border-top: 1px solid rgba(74,44,26,0.15); margin-bottom: 20px;" />
             
             <p>مرحباً <strong>${patientName}</strong>،</p>

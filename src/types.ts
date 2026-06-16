@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 
 // ===== API RESPONSE =====
 
@@ -20,7 +20,6 @@ export interface AuthData {
 export interface AuthenticatedRequest extends Request {
   auth: AuthData;
 }
-
 
 // ===== USER =====
 
@@ -49,16 +48,9 @@ export interface Specialist {
 
 // ===== BOOKING =====
 
-export type BookingStatus =
-  | "pending"
-  | "confirmed"
-  | "cancelled"
-  | "completed";
+export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
 
-export type PaymentStatus =
-  | "unpaid"
-  | "paid"
-  | "failed";
+export type PaymentStatus = "unpaid" | "paid" | "failed";
 
 export interface Booking {
   id: string;

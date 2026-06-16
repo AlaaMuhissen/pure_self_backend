@@ -1,29 +1,28 @@
+import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 import { Pool } from "pg";
-import dotenv from "dotenv";
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const databaseUrl = process.env.DATABASE_URL;
 
-console.log("Supabase URL:", supabaseUrl);
-console.log("Supabase Service Role Key:", supabaseServiceRoleKey ? "Present" : "Missing");
 if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error("Missing Supabase environment variables.");
+  throw new Error(
+    "Missing required environment variables: SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY",
+  );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+if (!databaseUrl) {
+  throw new Error("Missing required environment variable: DATABASE_URL");
+}
+
+// src/db/supabase.ts  (already fixed from yesterday)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
-
-console.log("Supabase client initialized successfully." , supabase);
-
-
-dotenv.config();
+export { supabaseAdmin as supabase }; // alias so old imports still work during migration
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
 });
-

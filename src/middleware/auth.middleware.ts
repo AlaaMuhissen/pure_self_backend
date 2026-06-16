@@ -1,20 +1,14 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
-import { Request, Response, NextFunction } from "express";
-import { ApiResponse, AuthenticatedRequest } from "../types";
+import type { Request, Response, NextFunction } from "express";
+import type { ApiResponse, AuthenticatedRequest } from "../types";
 
 export const clerkInit = clerkMiddleware({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-export function requireAuth(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  console.log("[AuthMiddleware] Checking authentication..." , { headers: req.headers });
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const auth = getAuth(req);
-  console.log("[AuthMiddleware] Auth object:", auth);
   if (!auth?.userId) {
     const body: ApiResponse = {
       success: false,

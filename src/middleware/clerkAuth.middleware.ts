@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyToken } from "@clerk/backend";
 
-
 import { pool } from "../db/supabase";
 
 export type AuthedRequest = Request & {
@@ -12,11 +11,7 @@ export type AuthedRequest = Request & {
   };
 };
 
-export async function clerkAuth(
-  req: AuthedRequest,
-  res: Response,
-  next: NextFunction
-) {
+export async function clerkAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization || "";
     const match = authHeader.match(/^Bearer\s+(.+)$/i);
@@ -49,7 +44,7 @@ export async function clerkAuth(
       WHERE clerk_user_id = $1
       LIMIT 1
       `,
-      [clerkUserId]
+      [clerkUserId],
     );
 
     const user = result.rows[0];

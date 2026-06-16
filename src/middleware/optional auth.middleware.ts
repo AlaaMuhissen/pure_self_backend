@@ -1,5 +1,5 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 
 /**
  * clerkAuth — hard guard, rejects with 401 if no valid session.

@@ -2,18 +2,9 @@ import { z } from "zod";
 
 // ===== ENUMS =====
 
-export const bookingStatusEnum = z.enum([
-  "pending",
-  "confirmed",
-  "cancelled",
-  "completed",
-]);
+export const bookingStatusEnum = z.enum(["pending", "confirmed", "cancelled", "completed"]);
 
-export const paymentStatusEnum = z.enum([
-  "unpaid",
-  "paid",
-  "failed",
-]);
+export const paymentStatusEnum = z.enum(["unpaid", "paid", "failed"]);
 
 export const bookingIdSchema = z.object({
   id: z.string().uuid(),
@@ -24,26 +15,24 @@ const isoDateString = z.string().datetime();
 
 // ===== CREATE =====
 
-export const createBookingSchema = z.object({
-  specialist_id: z.string().uuid(),
-  starts_at: z.string().datetime(),
-  ends_at: z.string().datetime(),
-  status: bookingStatusEnum.optional(),
-  payment_status: paymentStatusEnum.optional(),
-  payment_id: z.string().uuid().optional(),
-  price: z.coerce.number().optional(),
-  google_meet_url: z.string().url().optional(),
-  calendar_provider: z.string().optional(),
-  meeting_status: z.string().optional(),
-  google_event_id: z.string().optional(),
-})
-  .refine(
-    (data) => new Date(data.ends_at) > new Date(data.starts_at),
-    {
-      message: "ends_at must be after starts_at",
-      path: ["ends_at"],
-    }
-  );
+export const createBookingSchema = z
+  .object({
+    specialist_id: z.string().uuid(),
+    starts_at: z.string().datetime(),
+    ends_at: z.string().datetime(),
+    status: bookingStatusEnum.optional(),
+    payment_status: paymentStatusEnum.optional(),
+    payment_id: z.string().uuid().optional(),
+    price: z.coerce.number().optional(),
+    google_meet_url: z.string().url().optional(),
+    calendar_provider: z.string().optional(),
+    meeting_status: z.string().optional(),
+    google_event_id: z.string().optional(),
+  })
+  .refine((data) => new Date(data.ends_at) > new Date(data.starts_at), {
+    message: "ends_at must be after starts_at",
+    path: ["ends_at"],
+  });
 
 // ===== UPDATE =====
 

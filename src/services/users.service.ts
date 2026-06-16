@@ -1,6 +1,6 @@
-import { supabaseAdmin } from "../config/supabase";
-import { pool, supabase } from "../db/supabase";
-import { User, UserRole } from "../types";
+import { pool, supabase, supabaseAdmin } from "../db/supabase";
+import type { User } from "../types";
+
 
 const TABLE = "users";
 
@@ -16,11 +16,7 @@ export type CreateUserInput = {
 };
 
 export async function getUserById(id: string) {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from(TABLE).select("*").eq("id", id).single();
 
   if (error) throw new Error(`Failed to fetch user by id: ${error.message}`);
   return data;
@@ -49,11 +45,7 @@ export async function createUser(payload: CreateUserInput) {
     subscription_active: payload.subscription_active ?? false,
   };
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert(insertPayload)
-    .select()
-    .single();
+  const { data, error } = await supabase.from(TABLE).insert(insertPayload).select().single();
 
   if (error) throw new Error(`Failed to create user: ${error.message}`);
   return data;
@@ -72,12 +64,7 @@ export async function updateUser(id: string, payload: Partial<CreateUserInput>) 
     }),
   };
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .update(patch)
-    .eq("id", id)
-    .select()
-    .single();
+  const { data, error } = await supabase.from(TABLE).update(patch).eq("id", id).select().single();
 
   if (error) throw new Error(`Failed to update user: ${error.message}`);
   return data;
@@ -109,10 +96,7 @@ export async function requireDbUserByClerkId(clerkUserId: string) {
   return user;
 }
 
-export async function isUserRole(
-  clerkUserId: string,
-  role: "user" | "specialist" | "admin"
-) {
+export async function isUserRole(clerkUserId: string, role: "user" | "specialist" | "admin") {
   const user = await getUserByClerkId(clerkUserId);
   if (!user) return false;
   return user.role === role;
@@ -143,7 +127,7 @@ export async function upsertUser(params: {
         name: params.name ?? null,
         profile_image: params.profile_image ?? null,
       },
-      { onConflict: "clerk_user_id" }
+      { onConflict: "clerk_user_id" },
     )
     .select("*")
     .single();
@@ -161,7 +145,7 @@ export async function getUserAccessByClerkId(clerkUserId: string) {
     WHERE clerk_user_id = $1
     LIMIT 1
     `,
-    [clerkUserId]
+    [clerkUserId],
   );
 
   return rows[0] ?? null;
